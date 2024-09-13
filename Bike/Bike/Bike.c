@@ -35,6 +35,7 @@
 #define LOW_CELL_V 3.2				// Минимальное напряжение ячейки батареи
 #define HIGH_CELL_V 4.0				// Максимальное напряжение ячейки батареи
 
+#define VOLT_COEFF 4.0				// Коэффициент домножения напряжения
 
 static void setup_mode();			// Функция отображения настроек
 
@@ -85,7 +86,7 @@ ISR(TIMER0_OVF_vect){
 
 // Прерывание 10ms
 ISR(TIMER1_OVF_vect){
-	TCNT1 = 63074;// 40911; //49911//50100
+	TCNT1 = 63036;
 	f_time = 1;
 }
 
@@ -141,7 +142,7 @@ void init()
 	
 	TCCR1B|= (0<<CS12)|(1<<CS11)|(1<<CS10); //счет времени делитель тактовой на 64
 	TIMSK1 |= (1<<TOIE1);
-	TCNT1 =63074;
+	TCNT1 = 63036;
 	
 	
 	TCCR0B|=(1<<CS02)|(1<<CS01)|(0<<CS00); // счет по подьему T0
@@ -175,7 +176,7 @@ int main()
 	
 	
 	current = getCurrent();
-	battery = getVoltage();
+	battery = getVoltage()*VOLT_COEFF;
 	
 	_lcd_show_speed(0);
 	_lcd_show_odometr(odometr);
@@ -207,48 +208,31 @@ int main()
 			{
 				odometr = 0.0;
 				_lcd_show_odometr(odometr);
+				eeprom_write_float (&eep_odometr, odometr);    // сохраняем дистанцию			!! Вообще говоря это нужно удалить !!
 			}
 			else
 			{
 				capacity = 0.0;
 				_lcd_show_cap(capacity);
+				eeprom_write_float (&eep_odometr, odometr);    // сохраняем дистанцию			!! Вообще говоря это нужно удалить !!
 			}
 		}
 		
 		if(++time == 50)
 		{
 			_lcd_hide_time_pointers();				// Удалить две точки у часов
-			voltage = getVoltage();
+			voltage = getVoltage()*VOLT_COEFF;
 			volt_min += voltage;
 		}
 
-		
+		 
 		if(time >= 100)
 		{
 			time = 0;
 			_lcd_show_time();						// Обновить время
 			
 			
-			current = 10;//getCurrent();  !!!!!!!!!!!
-			curr_min += current;
-			
-			
-			float s = 10; //(speed_pulse_cnt + TCNT0)/param[0];	// Расстояние = кол-во импльсов / [кол-во импульсов / метр] !!!!!!!!!!!
-			
-			
-			TCNT0 = 0;
-			speed_pulse_cnt = 0;
-			
-			odometr += s/1000;								// Прибавить в километрах
-			speed = s*3.6;									// Перевести из м/с в км/ч
-			
-			
-			
-			_lcd_show_curr(current, voltage);
-			_lcd_show_speed(speed);
-			
-			if(show_mode)
-			_lcd_show_odometr(odometr);
+			current = getCurrent(); 
 			
 			
 			// Отображение зарядки
@@ -263,6 +247,32 @@ int main()
 				fcharging = 0;
 				_lcd_hide_charging();
 			}
+			
+			if(current < 0)
+				current = -current;
+			 
+			curr_min += current;
+			
+			
+			float s = (speed_pulse_cnt + TCNT0)/param[0];	// Расстояние = кол-во импльсов / [кол-во импульсов / метр] !!!!!!!!!!!
+			
+			
+			TCNT0 = 0;
+			speed_pulse_cnt = 0;
+			
+			odometr += s/1000;								// Прибавить в километрах
+			speed = s*3.6;									// Перевести из м/с в км/ч
+			
+			
+			
+			_lcd_show_curr(current, voltage);
+			_lcd_show_speed(speed);
+			
+			if(show_mode)
+				_lcd_show_odometr(odometr);
+			
+			
+			
 			
 		}
 		

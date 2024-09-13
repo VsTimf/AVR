@@ -13,7 +13,10 @@ void _lcd_show_speed(uint8_t speed)
 	LCD_xy_pos(0,8);
 	
 	LCD_put_digit(speed / 10);
-	LCD_put_digit(speed % 10) ;
+	LCD_put_digit(speed % 10);
+	
+	LCD_xy_pos(6,32);
+	LCD_printf("km/h");
 }
 	
 	
@@ -102,7 +105,7 @@ void _lcd_hide_time_pointers(void)
 // Отображение индикатора зарядки
 void _lcd_show_charging()
 {
-	LCD_xy_pos(7, 34);
+	LCD_xy_pos(0, 0);
 	LCD_printf("Charging");
 }
 
@@ -110,7 +113,7 @@ void _lcd_show_charging()
 // Скрытие индикатора зарядки
 void _lcd_hide_charging()
 {
-	LCD_xy_pos(7, 34);
+	LCD_xy_pos(0, 0);
 	LCD_printf("        ");
 }
 
