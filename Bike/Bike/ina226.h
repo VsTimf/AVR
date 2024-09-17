@@ -97,7 +97,7 @@ void adjCalibration(int16_t adj);
 void setAveraging(uint8_t avg); 
 
 // Установка разрешения для выбранного канала
-// void setSampleTime(uint8_t ch, uint8_t mode); 
+ void setSampleTime(uint8_t ch, uint8_t mode); 
  
 // Чтение напряжения на шунте
 // float getShuntVoltage(void); 

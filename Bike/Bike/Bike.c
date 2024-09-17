@@ -81,12 +81,15 @@ uint8_t fcharging;					// Показать индикатор зарядки
 // Пррерывание по переполнению счетчика импульсов с датчика
 ISR(TIMER0_OVF_vect){
 	speed_pulse_cnt += 256;
+	
+//	LCD_xy_pos(0, 48);
+//	LCD_printf("!!!!!");
 }
 
 
 // Прерывание 10ms
 ISR(TIMER1_OVF_vect){
-	TCNT1 = 63036;
+	TCNT1 = 63036;// 40911; //49911//50100
 	f_time = 1;
 }
 
@@ -96,8 +99,10 @@ ISR(TIMER1_OVF_vect){
 
 // Прерывание по отключению питания
 ISR(INT0_vect) {
+	
 	eeprom_write_float (&eep_capacity, capacity);   // сохраняем емкость
 	eeprom_write_float (&eep_odometr, odometr);    // сохраняем дистанцию
+
 }
 
 
@@ -131,7 +136,7 @@ void eeprom_data_read()
 
 void init()
 {
-	DDRD=0b00000000;
+	DDRD= 0b00000000;
 	PORTD=0b00001000;
 
 	DDRC= 0b00110000;
@@ -142,14 +147,14 @@ void init()
 	
 	TCCR1B|= (0<<CS12)|(1<<CS11)|(1<<CS10); //счет времени делитель тактовой на 64
 	TIMSK1 |= (1<<TOIE1);
-	TCNT1 = 63036;
+	TCNT1 =63074;
 	
 	
 	TCCR0B|=(1<<CS02)|(1<<CS01)|(0<<CS00); // счет по подьему T0
-
+    TIMSK0 |= (1<<TOIE0);
 	
 	//EICRA|= ((1<<ISC11)|(0<<ISC10));				// настраиваем прерывания по инт  кнопка
-	EICRA|= ((1<<ISC01)|(1<<ISC00));				// настраиваем прерывания по инт  питание выкл
+	EICRA|= ((1<<ISC01)|(0<<ISC00));				// настраиваем прерывания по инт  питание выкл
 	
 	EIMSK|=(1<<INT0)/* |(1<<INT1)*/;				// Разрешение прерываний по int
 }
@@ -169,6 +174,14 @@ int main()
 	eeprom_data_read();
 	sei();
 	
+	// Установка встроенного усреднения выборок
+	setAveraging(0b011);
+
+	// Установка разрешения для выбранного канала
+	setSampleTime(0x00, 0b101);
+	
+	
+	
 	
 	
 	if((PIND&_BV(PD3))==0x00)			// Настройка если при включении нажата кнопка
@@ -183,6 +196,8 @@ int main()
 	_lcd_show_battery(LOW_CELL_V * param[1], HIGH_CELL_V * param[1], battery);
 	_lcd_show_curr(current, voltage);
 	_lcd_show_time();
+	
+	
 	
 	
 	while(1)
@@ -254,7 +269,7 @@ int main()
 			curr_min += current;
 			
 			
-			float s = (speed_pulse_cnt + TCNT0)/param[0];	// Расстояние = кол-во импльсов / [кол-во импульсов / метр] !!!!!!!!!!!
+			float s = (float)(speed_pulse_cnt + TCNT0)/((float)param[0]/10.0);	// Расстояние = кол-во импльсов / [кол-во импульсов / метр] !!!!!!!!!!!
 			
 			
 			TCNT0 = 0;
@@ -322,7 +337,7 @@ void setup_speed_calibration(void)
 		
 		if(button_is_pressed(B_LONG))
 		{
-			param[0] = (speed_pulse_cnt + TCNT0) / 10;
+			param[0] = (speed_pulse_cnt + TCNT0);
 			eeprom_write_word(&eep_dist_cal, param[0]);		// Сохраняем калибровку дистанции
 			speed_pulse_cnt = 0;
 			TCNT0 = 0;

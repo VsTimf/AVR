@@ -163,13 +163,13 @@ void setAveraging(uint8_t avg)
 }
 
 
-//     // Установка разрешения для выбранного канала
-//     void setSampleTime(uint8_t ch, uint8_t mode) {
-//         uint16_t cfg_register = readRegister(INA226_CFG_REG_ADDR);  // Читаем конф. регистр
-//         cfg_register &= ~((0b111) << (ch ? 6 : 3));                 // Сбрасываем нужную пачку бит, в зависимости от канала
-//         cfg_register |= mode << (ch ? 6 : 3);                       // Пишем нужную пачку бит, в зависимости от канала
-//         writeRegister(INA226_CFG_REG_ADDR, cfg_register);           // Пишем новое значение конф. регистра
-//     }
+    // Установка разрешения для выбранного канала
+    void setSampleTime(uint8_t ch, uint8_t mode) {
+        uint16_t cfg_register = readRegister(INA226_CFG_REG_ADDR);  // Читаем конф. регистр
+        cfg_register &= ~((0b111) << (ch ? 6 : 3));                 // Сбрасываем нужную пачку бит, в зависимости от канала
+        cfg_register |= mode << (ch ? 6 : 3);                       // Пишем нужную пачку бит, в зависимости от канала
+        writeRegister(INA226_CFG_REG_ADDR, cfg_register);           // Пишем новое значение конф. регистра
+    }
 // 
 //     // Чтение напряжения на шунте
 //     float getShuntVoltage(void) {

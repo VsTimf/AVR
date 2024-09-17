@@ -183,7 +183,7 @@ void _lcd_show_settings(uint8_t setting, uint16_t param)
 	LCD_xy_pos(0, 24);
 	if(setting != 2)	//exit
 	{
-		sprintf(buf, "curr: %d", param);
+		sprintf(buf, "curr: %d ", param);
 		LCD_printf(buf);	
 	}
 	else
@@ -247,6 +247,6 @@ void _lcd_show_batcell_setup(uint16_t cells)
 	LCD_printf("BATT CELL  SETUP");
 	
 	LCD_xy_pos(0, 56);
-	sprintf(buf, "Cells: %d", cells);
+	sprintf(buf, "Cells: %d ", cells);
 	LCD_printf(buf);
 }
